@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DECK.GL with CARTO Maps API Raster Tiles</title>
+  
+    <script src="https://unpkg.com/deck.gl@8.1.0/dist.min.js"></script>
+    
+    <!-- Mapbox -->
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet' />
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <!-- CARTO Deck.gl's Tile Layer -->
+    <!--<script src="/assets/websdk.min.js"></script>-->
+    <script src="https://web-sdk-no-support.now.sh/"></script>
+  
+    <script src="index.js"></script>
+
+    <style>
+        body 
+        {
+            margin: 0;
+            padding: 0;
+        }
+  
+        #map 
+        {
+            width: 100vw;
+            height: 100vh;
+        }
+  
+        .action 
+        {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+    </style>
+
+</head>
+
+<body onload="initialize()">
+    
+    <div id="map"></div>  
+  
+</body>
+  
+</html>
