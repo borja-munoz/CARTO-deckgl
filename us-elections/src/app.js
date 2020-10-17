@@ -4,6 +4,9 @@ import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 
+import TypoGraphy from '@material-ui/core/Typography';
+import Drawer from '@material-ui/core/Drawer';
+import Slider from '@material-ui/core/Slider';
 
 const INITIAL_VIEW_STATE = {
     latitude: 32,
@@ -18,37 +21,10 @@ setDefaultCredentials({
     apiKey: 'default_public'
 });
 
-// Styles for continent selector
-const selectStyles = {
-    position: 'absolute',
-    zIndex: 1
-};
-
-// Continents to filter by
-const continents = ['All', 'Africa', 'Asia', 'South America', 'North America', 'Europe', 'Oceania'];
-const options = continents.map(c => (
-    <option key={c} value={c}>
-    {c}
-    </option>
-));
-
-// Build SQL where condition for the selected continent
-function getContinentCondition(continent) {
-    return continent !== 'All' ? `WHERE continent_name='${continent}'` : '';
-}
-
 export default function App() {
-    const [continent, setContinent] = useState('All');
 
-    /*
-    const layer = new CartoSQLLayer({
-    data: `SELECT * FROM world_population_2015 ${getContinentCondition(continent)}`,
-    pointRadiusMinPixels: 6,
-    getLineColor: [0, 0, 0, 0.75],
-    getFillColor: [238, 77, 90],
-    lineWidthMinPixels: 1
-    });
-    */
+    const [year, setYear] = useState(2016);
+    const [tooltip, setTooltip] = useState({county: 'Autauga'});
 
     // Color breaks
     const POLYGON_COLORS = 
@@ -74,7 +50,7 @@ export default function App() {
 
    const layer = new CartoSQLLayer({
         id: "us_elections_by_county",
-        data: sqlCounties + " WHERE a.year = 2016",
+        data: sqlCounties + " WHERE a.year = " + year,
         getFillColor: (object) => {
             if (object.properties.party == "democrat") 
             {
@@ -96,6 +72,8 @@ export default function App() {
         //getLineColor: [0, 0, 0, 100],
         //lineWidthMinPixels: 0.5,
         pickable: true,
+        onHover: info => setTooltip(info),
+
         extruded: true,
         //wireframe: true,
         getElevation: (f) => 
@@ -112,10 +90,37 @@ export default function App() {
     });
 
     return (
-        <div>
-            <select style={selectStyles} onChange={e => setContinent(e.currentTarget.value)}>
-                {options}
-            </select>
+        <div style={{display: 'flex'}}>
+
+            <Drawer
+                variant="permanent"
+                anchor="left"
+                open={true}>
+
+                <TypoGraphy variant="h5" color="inherit" style={{margin: '20px'}}>
+                    Popular Vote by County
+                </TypoGraphy>   
+
+                <TypoGraphy variant="caption" color="inherit" style={{marginLeft: '20px'}}>
+                    Year
+                </TypoGraphy>   
+                <Slider
+                    onChange={ (e, val) => setYear(val) }
+                    style={{width: '200px', margin: '20px'}}
+                    defaultValue={2016}
+                    valueLabelDisplay="on"
+                    step={null}
+                    marks={[{value: 2000, label: "2000"}, 
+                            {value: 2004, label: "2004"},
+                            {value: 2008, label: "2008"},
+                            {value: 2012, label: "2012"},
+                            {value: 2016, label: "2016"}]}
+                    min={2000}
+                    max={2016}
+                    valueLabelDisplay="auto"
+                />
+
+            </Drawer>
 
             <DeckGL
                 width="100%"
@@ -125,14 +130,32 @@ export default function App() {
                 layers={[layer]}
             >
                 <StaticMap
-                reuseMaps
-                mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
-                preventStyleDiffing
+                    reuseMaps
+                    mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"
+                    preventStyleDiffing
                 />
+
+                {tooltip.object && (
+                    <div style={{position: 'absolute', 
+                                 zIndex: 1, 
+                                 pointerEvents: 'none', 
+                                 backgroundColor: '#FFFFFF',
+                                 padding: '10px',
+                                 left: tooltip.x, top: tooltip.y}}>
+                        <strong>State</strong>: {tooltip.object.properties.state}<br/>
+                        <strong>County</strong>: {tooltip.object.properties.county}<br/>
+                        <strong>Party</strong>: {tooltip.object.properties.party}<br/>
+                        <strong>Votes</strong>: {tooltip.object.properties.candidatevotes}
+                    </div>
+                )}
+
             </DeckGL>
+
+
         </div>
   );
 }
 
 /* global document */
 render(<App />, document.body.appendChild(document.createElement('div')));
+
