@@ -1,6 +1,34 @@
+//import React from 'react';
+//import logo from './logo.svg';
+import './App.css';
+
+/*
+function App() {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <img src={logo} className="App-logo" alt="logo" />
+        <p>
+          Edit <code>src/App.js</code> and save to reload.
+        </p>
+        <a
+          className="App-link"
+          href="https://reactjs.org"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn React
+        </a>
+      </header>
+    </div>
+  );
+}
+
+export default App;
+*/
+
 import {CartoSQLLayer, setDefaultCredentials} from '@deck.gl/carto';
 import React, {useState} from 'react';
-import {render} from 'react-dom';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 
@@ -24,7 +52,7 @@ setDefaultCredentials({
 export default function App() {
 
     const [year, setYear] = useState(2016);
-    const [tooltip, setTooltip] = useState({county: 'Autauga'});
+    const [tooltip, setTooltip] = useState({});
 
     // Color breaks
     const POLYGON_COLORS = 
@@ -52,19 +80,19 @@ export default function App() {
         id: "us_elections_by_county",
         data: sqlCounties + " WHERE a.year = " + year,
         getFillColor: (object) => {
-            if (object.properties.party == "democrat") 
+            if (object.properties.party === "democrat") 
             {
                 return POLYGON_COLORS.DEMOCRAT;
             } 
-            else if (object.properties.party == "republican") 
+            else if (object.properties.party === "republican") 
             {
                 return POLYGON_COLORS.REPUBLICAN;
             } 
-            else if (object.properties.party == "green") 
+            else if (object.properties.party === "green") 
             {
                 return POLYGON_COLORS.GREEN;
             } 
-            else if (object.properties.party == "NA") 
+            else if (object.properties.party === "NA") 
             {
                 return POLYGON_COLORS.NA;
             } 
@@ -117,7 +145,6 @@ export default function App() {
                             {value: 2016, label: "2016"}]}
                     min={2000}
                     max={2016}
-                    valueLabelDisplay="auto"
                 />
 
             </Drawer>
@@ -156,6 +183,4 @@ export default function App() {
   );
 }
 
-/* global document */
-render(<App />, document.body.appendChild(document.createElement('div')));
 
