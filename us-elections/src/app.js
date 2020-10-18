@@ -28,31 +28,33 @@ export default App;
 */
 
 import {CartoSQLLayer, setDefaultCredentials} from '@deck.gl/carto';
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {StaticMap} from 'react-map-gl';
-import DeckGL from '@deck.gl/react';
+import DeckGL, {LinearInterpolator} from 'deck.gl';
 
 import TypoGraphy from '@material-ui/core/Typography';
 import Drawer from '@material-ui/core/Drawer';
 import Slider from '@material-ui/core/Slider';
-
-const INITIAL_VIEW_STATE = {
-    latitude: 32,
-    longitude: -103,
-    zoom: 4,
-    pitch: 60,
-    bearing: 0
-};
+import Button from '@material-ui/core/Button';
 
 setDefaultCredentials({
     username: 'bmunoz',
     apiKey: 'default_public'
 });
 
+const transitionInterpolator = new LinearInterpolator(['bearing']);
+
 export default function App() {
 
     const [year, setYear] = useState(2016);
     const [tooltip, setTooltip] = useState({});
+    const [initialViewState, setInitialViewState] = useState({
+        latitude: 40,
+        longitude: -98,
+        zoom: 3.4,
+        pitch: 90,
+        bearing: 0
+    });
 
     // Color breaks
     const POLYGON_COLORS = 
@@ -108,14 +110,31 @@ export default function App() {
         {
             return f.properties.candidatevotes ? f.properties.candidatevotes * 0.25 : 0
         },
-        /*
-        transitions: {
-            getElevation: {
-            duration: 1000,
-            enter: value => [0]
+        
+        transitions: 
+        {
+            getElevation: 
+            {
+                duration: 3000,
+                enter: value => [0],
+                onEnd: function()
+                {
+                    //console.log("Transition finished")
+                }
             }
-        }*/
+        }
     });
+
+    const rotateCamera = useCallback(() => 
+    {
+        setInitialViewState(viewState => ({
+            ...viewState,
+            bearing: viewState.bearing + 120,
+            transitionDuration: 10000,
+            transitionInterpolator,
+            onTransitionEnd: rotateCamera
+        }))
+    }, []);
 
     return (
         <div style={{display: 'flex'}}>
@@ -129,12 +148,12 @@ export default function App() {
                     Popular Vote by County
                 </TypoGraphy>   
 
-                <TypoGraphy variant="caption" color="inherit" style={{marginLeft: '20px'}}>
+                <TypoGraphy variant="h6" color="inherit" style={{marginLeft: '20px'}}>
                     Year
                 </TypoGraphy>   
                 <Slider
                     onChange={ (e, val) => setYear(val) }
-                    style={{width: '200px', margin: '20px'}}
+                    style={{width: '200px', margin: '30px'}}
                     defaultValue={2016}
                     valueLabelDisplay="on"
                     step={null}
@@ -146,15 +165,21 @@ export default function App() {
                     min={2000}
                     max={2016}
                 />
+                {/*
+                <Button variant="contained" color="primary" style={{margin: '30px'}}>
+                    Start Animation
+                </Button>
+                */}
 
             </Drawer>
 
             <DeckGL
                 width="100%"
                 height="100%"
-                initialViewState={INITIAL_VIEW_STATE}
+                initialViewState={initialViewState}
                 controller={true}
                 layers={[layer]}
+                onLoad={rotateCamera}
             >
                 <StaticMap
                     reuseMaps
@@ -177,7 +202,6 @@ export default function App() {
                 )}
 
             </DeckGL>
-
 
         </div>
   );
